@@ -65,7 +65,7 @@ class User {
     }
 }
 
-abstract class Test {
+abstract class Test implements Comparable<Test> {
 
     private static int number = 0;
     private String info;
@@ -144,9 +144,34 @@ abstract class Test {
     abstract public void runOperation(Test test);
 
     abstract public void sendResult(User user, Test test);
+
+        Test test;
+        public int compareTo(Test second) {
+            String[][]Arr=new String[5][];
+            if(test.getBMP()<second.getBMP()) {
+                return -1;
+            }
+            else if(test.getBMP()>second.getBMP()){
+                return 1;}
+            else
+            {
+                if(test.getCBC()>second.getCBC())
+                    return 1;
+                else if(test.getCBC()<second.getCBC())
+                    return -1;
+                else {
+                    if(test.getBloodPressure()>second.getBloodPressure())
+                        return 1;
+                    else if(test.getBloodPressure()<second.getCBC())
+                        return -1;
+                    else return 0;
+                }
+            }
+
+    }
 }
 
-abstract class Laboratory implements GettingRequest,Comparable{
+abstract class Laboratory implements GettingRequest,Comparable<Test>{
     String name;
     public boolean checkUser(String id){
 for(int i=0;i<allUsers.size();i++){
@@ -210,10 +235,10 @@ for(int i=0;i<allUsers.size();i++){
         if (instance == null) {
             instance = new Laboratory(instance.name) {
 
-                @Override
-                public int compareTo(Object o) {
-                    return 0;
-                }
+//                @Override
+//                public int compareTo(Object o) {
+//                    return 0;
+//                }
             };
         }
         return instance;
@@ -227,7 +252,6 @@ for(int i=0;i<allUsers.size();i++){
         }
             else if(test.getBMP()>second.getBMP()){
                 return 1;}
-
         else
         {
             if(test.getCBC()>second.getCBC())
@@ -241,13 +265,11 @@ for(int i=0;i<allUsers.size();i++){
                     return -1;
                 else return 0;
             }
-
-
         }
         //Laboratory.getInstance().statistics.sort(compareTo(second));
     }
     public void result(Test test){
-       // Laboratory.getInstance().statistics.sort(Test::compareTo(test));
+        Laboratory.getInstance().statistics.sort(Test::compareTo);
     }
 
     @Override
