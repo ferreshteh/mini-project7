@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 import java.util.concurrent.ThreadLocalRandom;
-
+import java.util.ArrayList;
+import java.util.Collections;
 public class Main {
     public static void main(String[] args) {
 User user1=new User("heartAttack",10,"123");
@@ -220,12 +221,19 @@ for(int i=0;i<allUsers.size();i++){
     Test test;
     @Override
     public int compareTo(Test second) {
-        if(test.getBMP()!=second.getBMP())
-            return 1;
+        String[][]Arr=new String[5][];
+        if(test.getBMP()<second.getBMP()) {
+            return -1;
+        }
+            else if(test.getBMP()>second.getBMP()){
+                return 1;}
+
         else
         {
-            if(test.getCBC()!=second.getCBC())
+            if(test.getCBC()>second.getCBC())
                 return 1;
+            else if(test.getCBC()<second.getCBC())
+                return -1;
             else {
                 if(test.getBloodPressure()>second.getBloodPressure())
                     return 1;
@@ -236,6 +244,10 @@ for(int i=0;i<allUsers.size();i++){
 
 
         }
+        //Laboratory.getInstance().statistics.sort(compareTo(second));
+    }
+    public void result(Test test){
+       // Laboratory.getInstance().statistics.sort(Test::compareTo(test));
     }
 
     @Override
@@ -474,8 +486,6 @@ enum BloodTypeRange {
     }
 
 }
-
-
 //--------------------------------------------------
 class AIDS extends Test implements Cloneable, Checking, WrongAnswer, MakingPrivate {
     public boolean getAidsConform() {
@@ -569,10 +579,6 @@ class AIDS extends Test implements Cloneable, Checking, WrongAnswer, MakingPriva
         return "id"+getId()+"info"+getInfo()+"bloodPressure"+getBloodPressure()+"cbc"+getCBC()+"bmp"+getBMP()+"confirmation"
                 +aidsConfirm+"illness"+illness;
     }
-
-    //public void checking(AIDS aids){
-//
-//}
     @Override
     public void checking(Test test) {
         AIDS aids=(AIDS) test;
