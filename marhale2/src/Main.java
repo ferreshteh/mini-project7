@@ -3,14 +3,45 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class Main {
     public static void main(String[] args) {
-
+User user1=new User("heartAttack",10,"123");
+User user2=new User("",20,"345");
+User user3=new User("asd",25,"745");
+User user4=new User("Anemia",14,"895");
+User user5=new User("thyroid",32,"8965");
+AIDS aidsUser1=new AIDS(user1.toString(),true,true,"heartAttack");
     }
 }
 
 class User {
-    String id;
-    int age;
-    String illness;
+
+    private String id;
+  private   int age;
+   private String illness;
+
+    public String getIllness() {
+        return illness;
+    }
+
+    public void setIllness(String illness) {
+        this.illness = illness;
+    }
+
+    public int getAge() {
+        return age;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
     private ArrayList<Test> tests = new ArrayList<>();
 
     public ArrayList<Test> getTests() {
@@ -21,6 +52,16 @@ class User {
         this.tests = tests;
     }
 
+    public User(String illness,int age,String id) {
+        this.illness = illness;
+        this.id=id;
+        this.age=age;
+       if (Laboratory.getInstance().checkUser(id)){
+           this.illness = illness;
+           this.id=id;
+           this.age=age;
+       }
+    }
 }
 
 abstract class Test {
@@ -104,8 +145,14 @@ abstract class Test {
     abstract public void sendResult(User user, Test test);
 }
 
-abstract class Laboratory implements GettingRequest{
+abstract class Laboratory implements GettingRequest,Comparable{
     String name;
+    public boolean checkUser(String id){
+for(int i=0;i<allUsers.size();i++){
+    if(allUsers.get(i).getId().equals(id))
+        return false;
+}
+   return true; }
     private final ArrayList<Test> allTests = new ArrayList<>();
     private final ArrayList<User> allUsers = new ArrayList<>();
     private final ArrayList<Request>requests=new ArrayList<>();
@@ -150,9 +197,11 @@ abstract class Laboratory implements GettingRequest{
     public String gettingRequest(User user, String id) {
         String str="not found";
         for(int i=0;i<Laboratory.getInstance().getRequests().size();i++){
-            if(Laboratory.getInstance().getRequests().get(i).getId().equals(id)){
+            if(Laboratory.getInstance().getRequests().get(i).getId().equals(id)&&Laboratory.getInstance().getRequests().get(i).test instanceof Thyroid&&user.getIllness()!=null){
                 str=Laboratory.getInstance().getRequests().get(i).toString();
             }
+            else if(Laboratory.getInstance().getRequests().get(i).getId().equals(id)&&Laboratory.getInstance().getRequests().get(i).test instanceof Anemia && user.getIllness()!=null)
+                str=Laboratory.getInstance().getRequests().get(i).toString();
         }
         return str;  }
 
@@ -160,9 +209,45 @@ abstract class Laboratory implements GettingRequest{
         if (instance == null) {
             instance = new Laboratory(instance.name) {
 
+                @Override
+                public int compareTo(Object o) {
+                    return 0;
+                }
             };
         }
         return instance;
+    }
+    Test test;
+    @Override
+    public int compareTo(Test second) {
+        if(test.getBMP()!=second.getBMP())
+            return 1;
+        else
+        {
+            if(test.getCBC()!=second.getCBC())
+                return 1;
+            else {
+                if(test.getBloodPressure()>second.getBloodPressure())
+                    return 1;
+                else if(test.getBloodPressure()<second.getCBC())
+                    return -1;
+                else return 0;
+            }
+
+
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "Laboratory{" +
+                "name='" + name + '\'' +
+                ", allTests=" + allTests +
+                ", allUsers=" + allUsers +
+                ", requests=" + requests +
+                ", statistics=" + statistics +
+                ", test=" + test +
+                '}';
     }
 }
 //************************************************
@@ -251,8 +336,9 @@ class Thyroid extends Test implements Cloneable,MakingPrivate {
 
         return new Thyroid(heartPressure, getInfo(), getTestConfirm());
     }
-    public void addRequest(User user,String id) {
+    public void addRequest(User user,String id,Test test) {
         Request request=new Request(user,id);
+        request.test=test;
         Laboratory.getInstance().getRequests().add(request);
     }
     @Override
@@ -337,7 +423,14 @@ class BloodType extends Test implements Cloneable, Checking, WrongAnswer {
 
     @Override
     public void checking(Test test) {
+        BloodType bloodType=(BloodType)test;
         numberOfChecking++;
+        if(bloodType.getCBC()>=BloodTypeRange.CBC.getRange_one()&&bloodType.getCBC()<=BloodTypeRange.CBC.getRange_two())
+            if(bloodType.getBMP()>=BloodTypeRange.BMP.getRange_one()&&bloodType.getBMP()<=BloodTypeRange.BMP.getRange_two())
+                if(bloodType.getBloodPressure()>=BloodTypeRange.BLOOD_PRESSURE.getRange_one()&&bloodType.getBloodPressure()<=BloodTypeRange.BLOOD_PRESSURE.getRange_two())
+                    bloodConfirm=true;
+
+        else wrongAnswer(test);
     }
 
     @Override
@@ -345,10 +438,16 @@ class BloodType extends Test implements Cloneable, Checking, WrongAnswer {
         if (numberOfChecking < 3) {
             runOperation(test);
         }
+        else bloodConfirm=false;
     }
     public String toString(){
         return "id"+getId()+"info"+getInfo()+"bloodPressure"+getBloodPressure()+"cbc"+getCBC()+"bmp"+getBMP()+"confirmation"
                 +bloodConfirm;
+    }
+    public void addRequest(User user,String id,Test test) {
+        Request request=new Request(user,id);
+        request.test=test;
+        Laboratory.getInstance().getRequests().add(request);
     }
 }
 
@@ -476,6 +575,13 @@ class AIDS extends Test implements Cloneable, Checking, WrongAnswer, MakingPriva
 //}
     @Override
     public void checking(Test test) {
+        AIDS aids=(AIDS) test;
+        numberOfChecking++;
+        if(aids.getCBC()>=BloodTypeRange.CBC.getRange_one()&&aids.getCBC()<=BloodTypeRange.CBC.getRange_two())
+            if(aids.getBMP()>=BloodTypeRange.BMP.getRange_one()&&aids.getBMP()<=BloodTypeRange.BMP.getRange_two())
+                if(aids.getBloodPressure()>=BloodTypeRange.BLOOD_PRESSURE.getRange_one()&&aids.getBloodPressure()<=BloodTypeRange.BLOOD_PRESSURE.getRange_two())
+                    aidsConfirm=true;
+        else wrongAnswer(test);
         wrongAnswer(test);
     }
 
@@ -483,6 +589,9 @@ class AIDS extends Test implements Cloneable, Checking, WrongAnswer, MakingPriva
     public void wrongAnswer(Test test) {
         if (numberOfChecking < 3) {
             runOperation(test);
+        }
+        else {
+            aidsConfirm=false;
         }
     }
 
@@ -526,6 +635,7 @@ class Request{
     }
 
     private String id;
+    Test test;
 }
 //---------------------------------------------------------------
 enum AIDSRange {
@@ -573,4 +683,6 @@ interface MakingPrivate {
 
 interface GettingRequest {
     public String gettingRequest(User user,String id);
+
+    int compareTo(Test second);
 }
